@@ -4,16 +4,16 @@ import cn.edu.swpu.cins.event.analyse.platform.dao.DailyEventDao;
 import cn.edu.swpu.cins.event.analyse.platform.dao.TopicDao;
 import cn.edu.swpu.cins.event.analyse.platform.exception.BaseException;
 import cn.edu.swpu.cins.event.analyse.platform.exception.NoEventException;
-import cn.edu.swpu.cins.event.analyse.platform.exception.OperationFailureException;
 import cn.edu.swpu.cins.event.analyse.platform.model.persistence.DailyEvent;
 import cn.edu.swpu.cins.event.analyse.platform.model.persistence.Topic;
+import cn.edu.swpu.cins.event.analyse.platform.model.view.ViewObject;
 import cn.edu.swpu.cins.event.analyse.platform.service.SpecialEventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.text.DateFormat;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 
 import static java.util.Comparator.comparing;
@@ -37,6 +37,61 @@ public class SpecialEventServiceImpl implements SpecialEventService {
         this.pageSize = pageSize;
     }
 
+    @Override
+    public ViewObject getSpecialEvent(int page, boolean getAll , int more, List<Integer> ids) throws BaseException {
+
+        ViewObject vo=new ViewObject();
+        int pageSize = this.pageSize;
+
+
+        if(more>0){
+            pageSize += more;
+        }
+
+        int offset = --page * pageSize;
+
+        List<Topic> topics = topicDao.selectAll().stream().filter(topic -> ids.contains(topic.getId())).collect(toList());
+
+        List<DailyEvent> dailyEvents;
+        Set<String> regions = new HashSet<>();
+
+        for (Topic topic : topics) {
+            for(String reg:topic.getRegion()){
+                regions.add(reg);
+            }
+
+        }
+
+        dailyEvents = getEventByRegions(regions.stream().collect(toList()));
+
+        //count begin
+        List<DailyEvent> list = dailyEvents
+                .stream()
+                .filter(dailyEvent -> matchEventByTopics(dailyEvent,topics))
+                .filter(dailyEvent -> dailyEvent.getCollectionStatus() == 0)
+                .sorted(comparing(DailyEvent::getPostTime).reversed())
+                .collect(toList());
+        //count end
+
+        //判断是否需要分页。
+        if (!getAll) {
+            //分页获取事件
+            int limit = (offset + pageSize) > list.size() ? list.size() : (offset + pageSize);
+
+            if (offset >= list.size() || offset < 0) {
+                throw new NoEventException();
+            }
+
+            vo.setEventPageList(list.subList(offset, limit));
+            vo.setPages(getPageCount(more,topics));
+            return vo;
+        } else {
+            //return list;
+            vo.setEventPageList(list);
+            vo.setPages(getPageCount(more,topics));
+            return vo;
+        }
+    }
 
     @Override
     public List<DailyEvent> getSpecialEvent(int page, boolean getAll ,int more) throws BaseException {
@@ -53,15 +108,12 @@ public class SpecialEventServiceImpl implements SpecialEventService {
         List<DailyEvent> dailyEvents;
         ArrayList<String> regions = new ArrayList<>();
 
-
-
         for (Topic topic : topics) {
             for(String reg:topic.getRegion()){
                 regions.add(reg);
             }
 
         }
-
 
         dailyEvents = getEventByRegions(regions);
 
@@ -89,15 +141,14 @@ public class SpecialEventServiceImpl implements SpecialEventService {
         }
     }
 
-    @Override
-    public int getPageCount(int more) throws BaseException {
+    public int getPageCount(int more,List<Topic> topics) throws BaseException {
         int pageSize = this.pageSize;
 
         if(more>0){
             pageSize += more;
         }
 
-        List<Topic> topics = topicDao.selectAll();
+//        List<Topic> topics = topicDao.selectAll();
         List<DailyEvent> dailyEvents;
         ArrayList<String> regions = new ArrayList<>();
 
@@ -105,7 +156,6 @@ public class SpecialEventServiceImpl implements SpecialEventService {
             for(String reg:topic.getRegion()){
                 regions.add(reg);
             }
-
         }
 
         dailyEvents = getEventByRegions(regions);
@@ -154,7 +204,6 @@ public class SpecialEventServiceImpl implements SpecialEventService {
                     }
                 }
             }
-
         }
 
         return false;

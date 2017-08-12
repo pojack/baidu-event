@@ -4,15 +4,75 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.swpu.cins.event.analyse.platform.dao.HandledEventDao">
 
+    <sql id="JOIN_FIELD">
+        de.theme as `theme`, de.main_view as `main_view`, de.url as `url`, de.post_type as `post_type`, de.post_time as `post_time`
+        , he.id, he.handled_condition, he.feedback_condition, he.collected_time, he.handled_time, he.detail, he.event_handler, he.recorder
+    </sql>
 
-    <delete id="deleteByIds" >
-    DELETE from handled_event
-    WHERE id IN
-    <foreach item="id" index="index" collection="list" open="(" separator="," close=")">
-        #{id}
-    </foreach>
+    <sql id="TABLE"> handled_event </sql>
+
+    <sql id="JOIN_TABLE"> daily_event </sql>
+
+    <!--批量删除sql-->
+    <delete id="deleteByIds">
+        DELETE FROM
+        <include refid="TABLE" />
+        WHERE id IN
+        <foreach item="id" index="index" collection="list" open="(" separator="," close=")">
+            #{id}
+        </foreach>
 
     </delete>
 
+    <!--条件查询事件sql-->
+    <select id="selectByCondition" resultType="cn.edu.swpu.cins.event.analyse.platform.model.persistence.HandledEvent">
+        SELECT <include refid="JOIN_FIELD"/>
+        FROM
+        <include refid="TABLE" /> he
+        ,<include refid="JOIN_TABLE" /> de
+        WHERE he.daily_event_id = de.id
+        <choose>
+            <when test="isHandled == 0">
+                AND he.handled_condition = '未处置'
+            </when>
+            <when test="isHandled == 1 and isFeedBack == 2">
+                AND he.handled_condition != '未处置'
+            </when>
+            <when test="isHandled == 1 and isFeedBack == 1">
+                AND he.handled_condition != '未处置'
+                AND he.feedback_condition = 1
+            </when>
+            <when test="isHandled == 1 and isFeedBack == 0">
+                AND he.handled_condition != '未处置'
+                AND he.feedback_condition = 0
+            </when>
+        </choose>
+        ORDER BY he.collected_time DESC
+        LIMIT #{offset},#{limit}
+    </select>
 
+    <!--条件查询事件总数sql-->
+    <select id="selectCountByCondition" resultType="int">
+        SELECT count(he.id)
+        FROM
+        <include refid="TABLE" /> he
+        ,<include refid="JOIN_TABLE" /> de
+        WHERE he.daily_event_id = de.id
+        <choose>
+            <when test="isHandled == 0">
+                AND he.handled_condition = '未处置'
+            </when>
+            <when test="isHandled == 1 and isFeedBack == 2">
+                AND he.handled_condition != '未处置'
+            </when>
+            <when test="isHandled == 1 and isFeedBack == 1">
+                AND he.handled_condition != '未处置'
+                AND he.feedback_condition = 1
+            </when>
+            <when test="isHandled == 1 and isFeedBack == 0">
+                AND he.handled_condition != '未处置'
+                AND he.feedback_condition = 0
+            </when>
+        </choose>
+    </select>
 </mapper>

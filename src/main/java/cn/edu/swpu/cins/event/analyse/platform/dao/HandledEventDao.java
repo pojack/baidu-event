@@ -35,7 +35,6 @@ public interface HandledEventDao {
             " WHERE daily_event_id = #{dailyEventId} LIMIT 1"})
     HandledEvent selectByDailyEvent(int dailyEventId);
 
-    //todo 暂不不对来源分类
     @Select({"SELECT ", JOIN_SELECT_FIELD
             , " FROM ", TABLE_NAME, " as he "
             , " LEFT JOIN ", JOIN_TABLE_NAME, " as de "
@@ -46,15 +45,19 @@ public interface HandledEventDao {
             , @Param("endTime") String endTime
             , @Param("source") String source);
 
-    @Select({" SELECT COUNT(id) " +
-            "FROM ", TABLE_NAME})
-    int selectCount();
-
-    @Update({"UPDATE ", TABLE_NAME
+    @Update({" UPDATE ", TABLE_NAME
             , " SET handled_condition = #{handledCondition} , feedback_condition = #{feedbackCondition} " +
             ", handled_time = #{handledTime} , detail = #{detail} , event_handler = #{eventHandler} "
             , " WHERE id = #{id}"})
     int updateHandledEvent(HandledEvent handledEvent);
+
+    List<HandledEvent> selectByCondition(@Param("offset") int offset
+            , @Param("limit") int limit
+            , @Param("isHandled") int isHandled
+            , @Param("isFeedBack") int isFeedBack);
+
+    int selectCountByCondition(@Param("isHandled") int isHandled
+            , @Param("isFeedBack") int isFeedBack);
 
     int deleteByIds(List<Integer> ids);
 }

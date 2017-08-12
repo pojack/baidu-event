@@ -4,9 +4,29 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.swpu.cins.event.analyse.platform.dao.TopicDao">
 
+    <sql id="TABLE"> special_topic </sql>
+
+    <sql id="INSERT_FIELD"> name, rules, region </sql>
+
+    <sql id="SELECT_FIELD"> id, name, region, rules </sql>
+
+    <!--为字符串数组指定typehandler-->
+    <resultMap id="topicResultMap" type="cn.edu.swpu.cins.event.analyse.platform.model.persistence.Topic">
+        <result typeHandler="cn.edu.swpu.cins.event.analyse.platform.mybatis.typehandler.StringArrayTypeHandler"
+                column="region" javaType="list"
+                jdbcType="VARCHAR"
+                property="region"/>
+        <result typeHandler="cn.edu.swpu.cins.event.analyse.platform.mybatis.typehandler.StringArrayTypeHandler"
+                column="rules" javaType="list"
+                jdbcType="VARCHAR"
+                property="rules"/>
+    </resultMap>
+
+    <!--批量删除专题sql-->
     <delete id="deleteByIds">
         DELETE
-        FROM special_topic
+        FROM
+        <include refid="TABLE"/>
         WHERE id IN
         <foreach item="id" index="index" collection="list"
                  open="(" separator="," close=")">
@@ -14,23 +34,26 @@
         </foreach>
     </delete>
 
-    <resultMap id="topicResultMap" type="cn.edu.swpu.cins.event.analyse.platform.model.persistence.Topic">
-        <result typeHandler="cn.edu.swpu.cins.event.analyse.platform.mybatis.typehandler.StringArrayTypeHandler" column="region" javaType="list"
-                jdbcType="VARCHAR"
-                property="region"/>
-        <result typeHandler="cn.edu.swpu.cins.event.analyse.platform.mybatis.typehandler.StringArrayTypeHandler" column="rules" javaType="list"
-                jdbcType="VARCHAR"
-                property="rules"/>
-    </resultMap>
-
+    <!--选择所有-->
     <select id="selectAll" resultMap="topicResultMap">
-        SELECT id,name,region,rules
-        from special_topic
+        SELECT
+        <include refid="SELECT_FIELD"/>
+        from
+        <include refid="TABLE"/>
     </select>
 
+    <!--插入专题-->
     <insert id="insertTopic" parameterType="cn.edu.swpu.cins.event.analyse.platform.model.persistence.Topic">
 
-        INSERT INTO special_topic (name,rules,region) VALUE (#{name},#{rules ,javaType = List , jdbcType = VARCHAR,typeHandler=cn.edu.swpu.cins.event.analyse.platform.mybatis.typehandler.StringArrayTypeHandler},#{region ,javaType = List , jdbcType = VARCHAR,typeHandler=cn.edu.swpu.cins.event.analyse.platform.mybatis.typehandler.StringArrayTypeHandler })
+        INSERT INTO
+        <include refid="TABLE"/>
+        (
+        <include refid="INSERT_FIELD"/>
+        )
+        VALUES
+        (#{name}
+        ,#{rules ,javaType = List , jdbcType = VARCHAR,typeHandler=cn.edu.swpu.cins.event.analyse.platform.mybatis.typehandler.StringArrayTypeHandler}
+        ,#{region ,javaType = List, jdbcType = VARCHAR,typeHandler=cn.edu.swpu.cins.event.analyse.platform.mybatis.typehandler.StringArrayTypeHandler })
     </insert>
 
 </mapper>

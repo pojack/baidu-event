@@ -54,15 +54,11 @@ public class TopicServiceImpl implements TopicService {
 
             }
 
-
-
-
             int insertCount = topicDao.insertTopic(topic);
 
             if (insertCount < 0) {
                 throw new IlleagalArgumentException();
             }
-
 
             return insertCount;
 

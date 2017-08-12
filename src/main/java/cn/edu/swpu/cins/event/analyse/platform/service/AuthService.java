@@ -8,7 +8,13 @@ import cn.edu.swpu.cins.event.analyse.platform.model.persistence.User;
  */
 public interface AuthService {
 
-    //这个类用于获取授权
+    /**
+     * 登录方法
+     * @param username
+     * @param password
+     * @return
+     * @throws BaseException
+     */
     public String userLogin(String username,String password) throws BaseException;
 
 

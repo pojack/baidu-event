@@ -1,9 +1,8 @@
 package cn.edu.swpu.cins.event.analyse.platform.service;
 
 import cn.edu.swpu.cins.event.analyse.platform.exception.BaseException;
-import cn.edu.swpu.cins.event.analyse.platform.model.persistence.HandledEvent;
 import cn.edu.swpu.cins.event.analyse.platform.model.view.HandledEventPage;
-import cn.edu.swpu.cins.event.analyse.platform.model.view.VO;
+import cn.edu.swpu.cins.event.analyse.platform.model.view.ViewObject;
 
 import java.util.List;
 
@@ -14,14 +13,8 @@ public interface HandledEventService {
      * @return
      * @throws BaseException
      */
-    VO getHandledEvents(int page, int more, int isHandled, int isFeedBack, boolean isAll) throws BaseException;
+    ViewObject getHandledEvents(int page, int more, int isHandled, int isFeedBack) throws BaseException;
 
-    /**
-     * 获取处置事件页数接口
-     * @return
-     * @throws BaseException
-     */
-//    int getPageCount(int more) throws BaseException;
 
     /**
      * 处置业务接口
