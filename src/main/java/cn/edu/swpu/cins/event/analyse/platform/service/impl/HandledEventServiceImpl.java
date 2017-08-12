@@ -62,7 +62,7 @@ public class HandledEventServiceImpl implements HandledEventService {
         int pageCount = eventCount/pageSize + (eventCount % pageSize != 0?1:0);
 
         vo.setEventPageList(list);
-        vo.setPageCount(pageCount);
+        vo.setPages(pageCount);
 
         return vo;
     }

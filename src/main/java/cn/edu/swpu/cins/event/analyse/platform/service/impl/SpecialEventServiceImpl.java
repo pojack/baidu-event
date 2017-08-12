@@ -81,12 +81,12 @@ public class SpecialEventServiceImpl implements SpecialEventService {
             }
 
             vo.setEventPageList(list.subList(offset, limit));
-            vo.setPageCount(getPageCount(more,topics));
+            vo.setPages(getPageCount(more,topics));
             return vo;
         } else {
             //return list;
             vo.setEventPageList(list);
-            vo.setPageCount(getPageCount(more,topics));
+            vo.setPages(getPageCount(more,topics));
             return vo;
         }
     }
