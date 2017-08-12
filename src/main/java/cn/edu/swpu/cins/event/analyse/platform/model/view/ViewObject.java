@@ -7,12 +7,12 @@ public class ViewObject<T> {
     //返回事件列表和总页数
 
     private List<T> EventPageList;
-    private int pageCount;
+    private int pages;
 
 
-    public ViewObject(List<T> eventPageList, int pageCount) {
+    public ViewObject(List<T> eventPageList, int pages) {
         EventPageList = eventPageList;
-        this.pageCount = pageCount;
+        this.pages = pages;
     }
 
 
@@ -27,11 +27,11 @@ public class ViewObject<T> {
         EventPageList = eventPageList;
     }
 
-    public int getPageCount() {
-        return pageCount;
+    public int getPages() {
+        return pages;
     }
 
-    public void setPageCount(int pageCount) {
-        this.pageCount = pageCount;
+    public void setPages(int pages) {
+        this.pages = pages;
     }
 }
