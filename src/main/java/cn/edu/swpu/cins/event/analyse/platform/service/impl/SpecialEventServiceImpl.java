@@ -12,8 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.text.DateFormat;
-import java.time.LocalDateTime;
 import java.util.*;
 
 import static java.util.Comparator.comparing;
@@ -83,12 +81,12 @@ public class SpecialEventServiceImpl implements SpecialEventService {
             }
 
             vo.setEventPageList(list.subList(offset, limit));
-            vo.setPages(getPageCount(more,topics));
+            vo.setPageCount(getPageCount(more,topics));
             return vo;
         } else {
             //return list;
             vo.setEventPageList(list);
-            vo.setPages(getPageCount(more,topics));
+            vo.setPageCount(getPageCount(more,topics));
             return vo;
         }
     }

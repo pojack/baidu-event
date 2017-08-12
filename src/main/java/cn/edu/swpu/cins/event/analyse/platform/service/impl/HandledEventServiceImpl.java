@@ -4,7 +4,6 @@ import cn.edu.swpu.cins.event.analyse.platform.dao.HandledEventDao;
 import cn.edu.swpu.cins.event.analyse.platform.enums.FeedbackEnum;
 import cn.edu.swpu.cins.event.analyse.platform.exception.BaseException;
 import cn.edu.swpu.cins.event.analyse.platform.exception.IlleagalArgumentException;
-import cn.edu.swpu.cins.event.analyse.platform.exception.NoEventException;
 import cn.edu.swpu.cins.event.analyse.platform.exception.OperationFailureException;
 import cn.edu.swpu.cins.event.analyse.platform.model.persistence.HandledEvent;
 import cn.edu.swpu.cins.event.analyse.platform.model.view.HandledEventPage;
@@ -17,8 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * Created by lp-deepin on 17-5-22.
@@ -65,7 +62,7 @@ public class HandledEventServiceImpl implements HandledEventService {
         int pageCount = eventCount/pageSize + (eventCount % pageSize != 0?1:0);
 
         vo.setEventPageList(list);
-        vo.setPages(pageCount);
+        vo.setPageCount(pageCount);
 
         return vo;
     }
