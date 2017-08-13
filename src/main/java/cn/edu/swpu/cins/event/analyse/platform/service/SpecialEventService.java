@@ -11,7 +11,7 @@ import java.util.List;
  */
 public interface SpecialEventService{
 
-    ViewObject getSpecialEvent(int page, boolean getAll , int more, List<Integer> ids) throws BaseException;
+    ViewObject getSpecialEventByPage(int page, int more, List<Integer> ids) throws BaseException;
 
-    public List<DailyEvent> getSpecialEvent(int page, boolean getAll ,int more) throws BaseException;
+    List<DailyEvent> getAllSpecialEvent() throws BaseException;
 }

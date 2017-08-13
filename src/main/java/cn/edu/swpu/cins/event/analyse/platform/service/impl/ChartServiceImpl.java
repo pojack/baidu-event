@@ -88,7 +88,7 @@ public class ChartServiceImpl implements ChartService {
             } else if (EventTableEnum.HANDLED_EVENT.getEventTable().equals(eventTable)) {
                 events = dailyEventDao.selectByGivenTimes(beginDateFormat, endDateFormat, source, true);
             } else if ((EventTableEnum.SPECIAL_EVENT.getEventTable().equals(eventTable))) {
-                events = specialEventService.getSpecialEvent(0, true,0);
+                events = specialEventService.getAllSpecialEvent();
                 events = events
                         .stream()
                         .filter((DailyEvent dailyEvent) -> {

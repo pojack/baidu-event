@@ -36,148 +36,70 @@ public class SpecialEventServiceImpl implements SpecialEventService {
     }
 
     @Override
-    public ViewObject getSpecialEvent(int page, boolean getAll , int more, List<Integer> ids) throws BaseException {
-
-        ViewObject vo=new ViewObject();
+    public ViewObject getSpecialEventByPage(int page, int more, List<Integer> ids) throws BaseException {
+        ViewObject vo = new ViewObject();
         int pageSize = this.pageSize;
 
-
-        if(more>0){
+        if (more > 0) {
             pageSize += more;
         }
-
         int offset = --page * pageSize;
-
         List<Topic> topics = topicDao.selectAll().stream().filter(topic -> ids.contains(topic.getId())).collect(toList());
-
         List<DailyEvent> dailyEvents;
         Set<String> regions = new HashSet<>();
 
         for (Topic topic : topics) {
-            for(String reg:topic.getRegion()){
+            for (String reg : topic.getRegion()) {
                 regions.add(reg);
             }
 
         }
-
         dailyEvents = getEventByRegions(regions.stream().collect(toList()));
-
-        //count begin
+        //collect the matched event
         List<DailyEvent> list = dailyEvents
                 .stream()
-                .filter(dailyEvent -> matchEventByTopics(dailyEvent,topics))
+                .filter(dailyEvent -> matchEventByTopics(dailyEvent, topics))
                 .filter(dailyEvent -> dailyEvent.getCollectionStatus() == 0)
                 .sorted(comparing(DailyEvent::getPostTime).reversed())
                 .collect(toList());
-        //count end
 
-        //判断是否需要分页。
-        if (!getAll) {
-            //分页获取事件
-            int limit = (offset + pageSize) > list.size() ? list.size() : (offset + pageSize);
+        //分页获取事件
+        int limit = (offset + pageSize) > list.size() ? list.size() : (offset + pageSize);
 
-            if (offset >= list.size() || offset < 0) {
-                throw new NoEventException();
-            }
-
-            vo.setEventPageList(list.subList(offset, limit));
-            vo.setPages(getPageCount(more,topics));
-            return vo;
-        } else {
-            //return list;
-            vo.setEventPageList(list);
-            vo.setPages(getPageCount(more,topics));
-            return vo;
+        if (offset >= list.size() || offset < 0) {
+            throw new NoEventException();
         }
+        //get page count
+        int pages = list.size()/pageSize + list.size() / pageSize + (list.size() % pageSize == 0 ? 0 : 1);
+        vo.setEventPageList(list.subList(offset, limit));
+        vo.setPages(pages);
+
+        return vo;
     }
 
     @Override
-    public List<DailyEvent> getSpecialEvent(int page, boolean getAll ,int more) throws BaseException {
-
-        int pageSize = this.pageSize;
-
-        if(more>0){
-            pageSize += more;
-        }
-
-        int offset = --page * pageSize;
-
+    public List<DailyEvent> getAllSpecialEvent() throws BaseException {
         List<Topic> topics = topicDao.selectAll();
         List<DailyEvent> dailyEvents;
-        ArrayList<String> regions = new ArrayList<>();
+        Set<String> regions = new HashSet<>();
 
         for (Topic topic : topics) {
-            for(String reg:topic.getRegion()){
+
+            for (String reg : topic.getRegion()) {
                 regions.add(reg);
             }
-
         }
-
-        dailyEvents = getEventByRegions(regions);
-
-        //count begin
+        //convert set to list
+        dailyEvents = getEventByRegions(regions.stream().collect(toList()));
+        //collect the matched event
         List<DailyEvent> list = dailyEvents
                 .stream()
-                .filter(dailyEvent -> matchEventByTopics(dailyEvent,topics))
+                .filter(dailyEvent -> matchEventByTopics(dailyEvent, topics))
                 .filter(dailyEvent -> dailyEvent.getCollectionStatus() == 0)
                 .sorted(comparing(DailyEvent::getPostTime).reversed())
                 .collect(toList());
-        //count end
 
-        //判断是否需要分页。
-        if (!getAll) {
-            //分页获取事件
-            int limit = (offset + pageSize) > list.size() ? list.size() : (offset + pageSize);
-
-            if (offset >= list.size() || offset < 0) {
-                throw new NoEventException();
-            }
-
-            return list.subList(offset, limit);
-        } else {
-            return list;
-        }
-    }
-
-    public int getPageCount(int more,List<Topic> topics) throws BaseException {
-        int pageSize = this.pageSize;
-
-        if(more>0){
-            pageSize += more;
-        }
-
-//        List<Topic> topics = topicDao.selectAll();
-        List<DailyEvent> dailyEvents;
-        ArrayList<String> regions = new ArrayList<>();
-
-        for (Topic topic : topics) {
-            for(String reg:topic.getRegion()){
-                regions.add(reg);
-            }
-        }
-
-        dailyEvents = getEventByRegions(regions);
-
-        //count begin
-        List<DailyEvent> list = dailyEvents
-                .stream()
-                .filter(dailyEvent -> matchEventByTopics(dailyEvent,topics))
-                .filter(dailyEvent -> dailyEvent.getCollectionStatus() == 0)
-                .collect(toList());
-        //count end
-
-        int pageCount = list.size() / pageSize + (list.size() % pageSize == 0 ? 0 : 1);
-
-        return pageCount;
-    }
-
-
-    //根据填写专题的规则获取事件信息（事件均未处置）
-    private List<DailyEvent> getEventByRules(List<String> rules) {
-        List<DailyEvent> dailyEvents;
-        dailyEvents = dailyEventDao.selectByRules(rules);
-
-        return dailyEvents;
+        return list;
     }
 
     //根据填写专题的地域获取事件信息（事件均未处置）
@@ -188,13 +110,13 @@ public class SpecialEventServiceImpl implements SpecialEventService {
         return dailyEvents;
     }
 
-    private boolean matchEventByTopics(DailyEvent event, List<Topic> topics){
+    private boolean matchEventByTopics(DailyEvent event, List<Topic> topics) {
         String content = event.getMainView();
 
         for (Topic topic : topics) {
-            for (String region:topic.getRegion()){
+            for (String region : topic.getRegion()) {
 
-                if (content.contains(region) ){
+                if (content.contains(region)) {
                     for (String rule : topic.getRules()) {
                         if (content.contains(rule)) {
                             return true;

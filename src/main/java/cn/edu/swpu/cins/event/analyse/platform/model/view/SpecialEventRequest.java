@@ -2,17 +2,17 @@ package cn.edu.swpu.cins.event.analyse.platform.model.view;
 
 import java.util.List;
 
-public class SpecialEventPage {
+public class SpecialEventRequest {
 
     private int more;
     private List<Integer> ids;
 
-    public SpecialEventPage(int more, List<Integer> ids) {
+    public SpecialEventRequest(int more, List<Integer> ids) {
         this.more = more;
         this.ids = ids;
     }
 
-    public SpecialEventPage() {
+    public SpecialEventRequest() {
     }
 
     public int getMore() {
