@@ -12,7 +12,7 @@ spring:
     settings:
       number_format: 0.##
   datasource:
-    password: Lp960122
+    password: 123
     username: root
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/baidu_event?useUnicode=true&characterEncoding=utf8&useSSL=false
@@ -29,3 +29,7 @@ jwt:
   secret: mySecret
   expiration: 68400
   tokenHead: "Bearer "
+
+logging:
+  level: info
+  file: baidu-event.log
