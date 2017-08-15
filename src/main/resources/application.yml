@@ -1,3 +1,4 @@
+#mybatis
 mybatis:
   postType-aliases-package: cn.edu.swpu.cins.event.analyse.platform.model.persistence
   mapper-locations: classpath:mapper/*.xml
@@ -6,11 +7,13 @@ mybatis:
     cache-enabled: true
     use-column-label: true
     map-underscore-to-camel-case: true
-
+#spring
 spring:
+  #freemarker
   freemarker:
     settings:
       number_format: 0.##
+  #jdbc相关
   datasource:
     password: 123
     username: root
@@ -18,18 +21,35 @@ spring:
     url: jdbc:mysql://127.0.0.1:3306/baidu_event?useUnicode=true&characterEncoding=utf8&useSSL=false
 server:
   port: 4000
-
-
+#业务相关的常量
 event:
   service:
     page-count: 5 #每页展示的事件个数
     chart-date-range: 62 #查询图表的日期范围，单位为天
+#jwt相关
 jwt:
   header: Authorization
   secret: mySecret
   expiration: 68400
   tokenHead: "Bearer "
-
+#日志配置
 logging:
   level: info
   file: baidu-event.log
+#用actuator关闭应用
+endpoints:
+  shutdown:
+    sensitive: true
+    enabled: true
+#actuator的访问地址
+management:
+  address: 127.0.0.1
+  port: 4001
+  security:
+    enabled: false
+  context-path: /manage
+security:
+  user:
+    name: admin
+    password: lp960122
+

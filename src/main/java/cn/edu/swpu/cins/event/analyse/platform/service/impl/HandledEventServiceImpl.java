@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by lp-deepin on 17-5-22.
@@ -55,15 +56,19 @@ public class HandledEventServiceImpl implements HandledEventService {
             throw new IlleagalArgumentException();
         }
 
-        List<HandledEvent> list = handledEventDao.selectByCondition((--page) * pageSize, pageSize, isHandled, isFeedBack);
+        List<HandledEvent> handledEventList = handledEventDao.selectByCondition((--page) * pageSize, pageSize, isHandled, isFeedBack);
 
         //用事件总数计算页数
         int eventCount = handledEventDao.selectCountByCondition(isHandled, isFeedBack);
         int pageCount = eventCount/pageSize + (eventCount % pageSize != 0?1:0);
 
+        List<HandledEventPage> list = handledEventList
+                .stream()
+                .map(HandledEventPage::new)
+                .collect(Collectors.toList());
+
         vo.setEventPageList(list);
         vo.setPages(pageCount);
-
         return vo;
     }
 
