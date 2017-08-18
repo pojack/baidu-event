@@ -70,7 +70,7 @@ public class SpecialEventServiceImpl implements SpecialEventService {
             throw new NoEventException();
         }
         //get page count
-        int pages = list.size()/pageSize + list.size() / pageSize + (list.size() % pageSize == 0 ? 0 : 1);
+        int pages = list.size()/pageSize + (list.size() % pageSize == 0 ? 0 : 1);
         vo.setEventPageList(list.subList(offset, limit));
         vo.setPages(pages);
 
