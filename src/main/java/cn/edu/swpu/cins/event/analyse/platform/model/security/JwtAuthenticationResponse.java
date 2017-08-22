@@ -1,4 +1,4 @@
-package cn.edu.swpu.cins.event.analyse.platform.model.view;
+package cn.edu.swpu.cins.event.analyse.platform.model.security;
 
 import java.io.Serializable;
 
@@ -10,13 +10,10 @@ public class JwtAuthenticationResponse implements Serializable {
     private final String username;
     private final String role;
 
-
     public JwtAuthenticationResponse(String token, String username, String role) {
-
         this.token = token;
         this.username = username;
         this.role = role;
-
     }
 
     public String getToken() {

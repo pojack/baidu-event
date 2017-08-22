@@ -1,4 +1,4 @@
-package cn.edu.swpu.cins.event.analyse.platform.model.view;
+package cn.edu.swpu.cins.event.analyse.platform.model.security;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;

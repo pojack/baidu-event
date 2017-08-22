@@ -1,6 +1,6 @@
 package cn.edu.swpu.cins.event.analyse.platform.config.util;
 
-import cn.edu.swpu.cins.event.analyse.platform.model.view.JwtUser;
+import cn.edu.swpu.cins.event.analyse.platform.model.security.JwtUser;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,6 +40,7 @@ public class JwtTokenUtil implements Serializable {
         }
         return username;
     }
+
     private Claims getClaimsFromToken(String token) {
         Claims claims;
         try {
@@ -52,10 +53,11 @@ public class JwtTokenUtil implements Serializable {
         }
         return claims;
     }
+
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         claims.put(CLAIM_KEY_USERNAME, userDetails.getUsername());
-        claims.put(CLAIM_KEY_CREATED,new Date());
+        claims.put(CLAIM_KEY_CREATED, new Date());
         return generateToken(claims);
     }
 
@@ -66,6 +68,7 @@ public class JwtTokenUtil implements Serializable {
                 .signWith(io.jsonwebtoken.SignatureAlgorithm.HS512, secret)
                 .compact();
     }
+
     private Date generateExpirationDate() {
         return new Date(System.currentTimeMillis() + expiration * 1000);
     }
@@ -96,6 +99,7 @@ public class JwtTokenUtil implements Serializable {
         final Date expiration = getExpirationDateFromToken(token);
         return expiration.before(new Date());
     }
+
     public String refreshToken(String token) {
         String refreshedToken;
         try {
@@ -115,7 +119,7 @@ public class JwtTokenUtil implements Serializable {
         return (
                 username.equals(user.getUsername())
                         && !isTokenExpired(token)
-                       );
+        );
     }
 
 

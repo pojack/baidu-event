@@ -12,12 +12,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("event/topic")
-public class TopicsController {
+public class TopicController {
 
     private TopicService topicService;
 
     @Autowired
-    public TopicsController(TopicService topicService) {
+    public TopicController(TopicService topicService) {
         this.topicService = topicService;
     }
 

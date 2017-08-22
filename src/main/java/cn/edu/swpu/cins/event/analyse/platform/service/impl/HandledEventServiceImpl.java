@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
  */
 @Service
 public class HandledEventServiceImpl implements HandledEventService {
-
     private HandledEventDao handledEventDao;
     private final int pageSize;
 

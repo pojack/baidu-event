@@ -2,7 +2,7 @@ package cn.edu.swpu.cins.event.analyse.platform.service.impl;
 
 import cn.edu.swpu.cins.event.analyse.platform.dao.UserDao;
 import cn.edu.swpu.cins.event.analyse.platform.model.persistence.User;
-import cn.edu.swpu.cins.event.analyse.platform.model.view.JwtUserFactory;
+import cn.edu.swpu.cins.event.analyse.platform.model.security.JwtUserFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,7 +20,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user=userDao.queryByName(username);
+        User user = userDao.queryByName(username);
 
         if(user!=null){
 

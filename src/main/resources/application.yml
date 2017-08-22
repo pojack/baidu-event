@@ -19,6 +19,8 @@ spring:
     username: root
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/baidu_event?useUnicode=true&characterEncoding=utf8&useSSL=false
+  redis:
+    host:
 server:
   port: 4000
 #业务相关的常量
@@ -40,6 +42,7 @@ logging:
 endpoints:
   shutdown:
     sensitive: true
+    #开启shutdown
     enabled: true
 #actuator的访问地址
 management:
@@ -52,4 +55,6 @@ security:
   user:
     name: admin
     password: lp960122
-
+#redis配置
+myredis:
+  host: redis://localhost:6379/10

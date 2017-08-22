@@ -20,7 +20,6 @@ import static java.util.stream.Collectors.toList;
 
 @Service
 public class DailyEventServiceImpl implements DailyEventService {
-
     private int pageSize;
     private DailyEventDao dailyEventDao;
     private HandledEventDao handledEventDao;

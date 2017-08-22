@@ -5,7 +5,14 @@ package cn.edu.swpu.cins.event.analyse.platform.model.view;
  */
 public class ChartPoint {
     private String x;
-    private long y;
+    private int y;
+
+    public ChartPoint(String x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public ChartPoint() {   }
 
     public String getX() {
         return x;
@@ -15,11 +22,11 @@ public class ChartPoint {
         this.x = x;
     }
 
-    public long getY() {
+    public int getY() {
         return y;
     }
 
-    public void setY(long y) {
+    public void setY(int y) {
         this.y = y;
     }
 }

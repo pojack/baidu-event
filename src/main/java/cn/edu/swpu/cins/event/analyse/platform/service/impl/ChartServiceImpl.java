@@ -28,17 +28,19 @@ import java.util.stream.Collectors;
 public class ChartServiceImpl implements ChartService {
     private static final DateFormat CHART_PARAMETER_DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy");
     private static final DateFormat DATABASE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd 00:00:00");
-    private static final long DAY = 86400000L;
+    private static final long MILLISECONDS_OF_DAY = 86400000L;
 
     private DailyEventDao dailyEventDao;
     private SpecialEventService specialEventService;
     private ChartGenerator chartGenerator;
+    //日期的最大间隔
     private int dateRange;
 
     @Autowired
     public ChartServiceImpl(DailyEventDao dailyEventDao
             , @Value("${event.service.chart-date-range}") int dateRange
-            , SpecialEventService specialEventService, ChartGenerator chartGenerator) {
+            , SpecialEventService specialEventService
+            , ChartGenerator chartGenerator) {
         this.chartGenerator = chartGenerator;
         this.dateRange = dateRange;
         this.dailyEventDao = dailyEventDao;
@@ -46,12 +48,13 @@ public class ChartServiceImpl implements ChartService {
     }
 
     @Override
-    public Map<String, List<ChartPoint>> getChartPoints(
-            String source
+    public Map<String, List<ChartPoint>>
+    getChartPoints(String source
             , String dataTypeName
             , String beginTime
             , String endTime
-            , String eventTable) throws BaseException {
+            , String eventTable)
+            throws BaseException {
         Map<String, List<ChartPoint>> map = new HashMap<String, List<ChartPoint>>();
         //判断数据类型是否正确
         if (!ChartDataTypeEnum.isInclude(dataTypeName)) {
@@ -67,12 +70,12 @@ public class ChartServiceImpl implements ChartService {
             long beginTimeLong = beginTimeDate.getTime();
 
             //对日期范围的限制
-            if (endTimeLong - beginTimeLong < DAY || endTimeLong - beginTimeLong > dateRange * DAY) {
+            if (endTimeLong - beginTimeLong < MILLISECONDS_OF_DAY || endTimeLong - beginTimeLong > dateRange * MILLISECONDS_OF_DAY) {
                 throw new IlleagalArgumentException();
             }
 
             String endDateFormat;
-            endDateFormat = DATABASE_DATE_FORMAT.format(new Date(endTimeLong + DAY));
+            endDateFormat = DATABASE_DATE_FORMAT.format(new Date(endTimeLong + MILLISECONDS_OF_DAY));
             String beginDateFormat;
             beginDateFormat = DATABASE_DATE_FORMAT.format(beginTimeDate);
 
@@ -102,21 +105,19 @@ public class ChartServiceImpl implements ChartService {
             }
 
             ChartDataTypeEnum dataType = ChartDataTypeEnum.getDataType(dataTypeName);
-            if(ChartDataTypeEnum.DOUBLELINE.getDataType().equals(dataTypeName)){
+
+            if (ChartDataTypeEnum.DOUBLELINE.getDataType().equals(dataTypeName)) {
                 List<ChartPoint> postCountPoints = chartGenerator.getChartPoints(events, beginTimeLong, endTimeLong, ChartDataTypeEnum.POSTCOUNT);
                 List<ChartPoint> followCountPoints = chartGenerator.getChartPoints(events, beginTimeLong, endTimeLong, ChartDataTypeEnum.FOLOWCOUNT);
-                map.put("postCountPoints",postCountPoints);
-                map.put("followCountPoints",followCountPoints);
-            }else {
+                map.put("postCountPoints", postCountPoints);
+                map.put("followCountPoints", followCountPoints);
+            } else {
                 List<ChartPoint> list = chartGenerator.getChartPoints(events, beginTimeLong, endTimeLong, dataType);
-                map.put("chartPoints",list);
+                map.put("chartPoints", list);
             }
 
             return map;
-
-        } catch (IlleagalArgumentException ie) {
-            throw new IlleagalArgumentException();
-        } catch (ParseException pe) {
+        } catch (IlleagalArgumentException | ParseException ie) {
             throw new IlleagalArgumentException();
         } catch (Exception e) {
             throw new BaseException("服务器内部错误", HttpStatus.INTERNAL_SERVER_ERROR);

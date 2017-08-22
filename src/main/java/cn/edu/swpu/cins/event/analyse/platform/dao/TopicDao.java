@@ -15,18 +15,11 @@ public interface TopicDao {
     static String SELECT_FIELD = " id,name,region,rules ";
     static String INSERT_FIELD = " name,region,rules ";
 
-//    @Insert({"INSERT INTO " , TABLE_NAME
-//            , " ( " , INSERT_FIELD , " )"
-//            , " VALUE ( #{name} , #{region , javaType = List , jdbcType = VARCHAR} , #{rules , javaType = List , jdbcType = VARCHAR } )"})
     int insertTopic(Topic topic);
 
-//    @Select({"SELECT ",SELECT_FIELD
-//            ," FROM ",TABLE_NAME})
     List<Topic> selectAll();
 
     int deleteByIds(List<Integer> ids);
 
-    @Select({"SELECT COUNT(*)"
-            ," FROM ",TABLE_NAME})
-    int selectCount();
+    List<Topic> selectByIds(List<Integer> ids);
 }

@@ -29,10 +29,12 @@ public class UserServiceImpl implements UserService {
     public int updatePwd(String username, String password) throws BaseException {
 
         try{
-            int num=userDao.updatePwd(username,password);
-            if(num==1){
+            int num = userDao.updatePwd(username,password);
+            if(num == 1){
+
                 return num;
             }
+
             return 0;
         }catch (Exception e){
             throw new UpdateException();
@@ -43,9 +45,12 @@ public class UserServiceImpl implements UserService {
     public int insertUser(User user) throws UserException {
         try{
             user.setRole("ROLE_"+user.getRole());
+
             if(userDao.queryByName(user.getUsername())!=null){
+
                 return 0;
             }
+
             return userDao.addUser(user);
         }catch (Exception e){
             throw new UserException("服务器内部异常", HttpStatus.FORBIDDEN);
@@ -59,7 +64,9 @@ public class UserServiceImpl implements UserService {
             List<Role> roles=userDao.queryAll();
             List<Role> VIP=new ArrayList<Role>();
             List<Role> NORMAL=new ArrayList<Role>();
+
             for (Role role:roles) {
+
                 if(role.getRole().equals("ROLE_NORMAL")){
                     role.setRole("NORMAL");
                     NORMAL.add(role);
@@ -68,9 +75,10 @@ public class UserServiceImpl implements UserService {
                     role.setRole("VIP");
                     VIP.add(role);
                 }
-
             }
+
             RoleList roleList=new RoleList(VIP,NORMAL);
+
             return roleList;
         }catch (Exception e){
             throw new UserException("服务器内部异常", HttpStatus.FORBIDDEN);
@@ -87,20 +95,20 @@ public class UserServiceImpl implements UserService {
             else {
                 role.setRole("ROLE_VIP");
             }
+
             return userDao.updateRole(role);
         }catch (Exception e){
             throw new UserException("服务器内部异常", HttpStatus.FORBIDDEN);
         }
-
     }
 
     @Override
     public int deleteUser(String username) throws UserException {
         try{
+
             return userDao.deleteUser(username)>0?1:0;
         }catch (Exception e){
             throw new UserException("服务器内部异常",HttpStatus.FORBIDDEN);
         }
     }
-
 }

@@ -2,6 +2,7 @@ package cn.edu.swpu.cins.event.analyse.platform.controller;
 
 import cn.edu.swpu.cins.event.analyse.platform.exception.BaseException;
 import cn.edu.swpu.cins.event.analyse.platform.exception.UserException;
+import cn.edu.swpu.cins.event.analyse.platform.model.threadhold.UserHolder;
 import cn.edu.swpu.cins.event.analyse.platform.service.ReportService;
 import cn.edu.swpu.cins.event.analyse.platform.utility.chart.generator.impl.ChartGeneratorImpl;
 import freemarker.template.Template;
@@ -19,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.URLEncoder;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.UUID;
 
@@ -30,15 +32,18 @@ import java.util.UUID;
 public class ReportController {
     private ReportService reportService;
     private FreeMarkerConfigurer freeMarkerConfigurer;
-
-    @Autowired
     private ChartGeneratorImpl chartGenerator;
+    private UserHolder userHolder;
 
     @Autowired
     public ReportController(ReportService reportService
-            , FreeMarkerConfigurer freeMarkerConfigurer) {
+            , FreeMarkerConfigurer freeMarkerConfigurer
+            , ChartGeneratorImpl chartGenerator
+            , UserHolder userHolder) {
         this.reportService = reportService;
         this.freeMarkerConfigurer = freeMarkerConfigurer;
+        this.chartGenerator = chartGenerator;
+        this.userHolder = userHolder;
     }
 
     @GetMapping("/report/{year}/{issue}")
@@ -48,13 +53,25 @@ public class ReportController {
             , @PathVariable int issue
             , @RequestParam("permission") String permission
             , HttpSession httpSession) {
+
         Template template = null;
         Map<String, Object> reportDataMap = null;
 
         try {
             //check whether the session has the downloading permision
-            String storedPermission = (String) httpSession.getAttribute("permission");
-            if (storedPermission == null || !storedPermission.equals(permission)) {
+            Enumeration<String> attrNames =  httpSession.getAttributeNames();
+            boolean isPermitted = false;
+
+            while(attrNames.hasMoreElements()){
+                String attrName = attrNames.nextElement();
+                String attribute = (String) httpSession.getAttribute(attrName);
+
+                if(permission.equals(attribute)){
+                    isPermitted = true;
+                }
+            }
+
+            if (!isPermitted) {
                 throw new UserException("权限不足", HttpStatus.FORBIDDEN);
             }
 
@@ -64,19 +81,23 @@ public class ReportController {
             response.setHeader("content-Type", "application/msword");
             // 下载文件的名称 "西南石油大学yyyy年m-m月舆情月报.doc"
             String fileName = "西南石油大学" + year + "年" + issue + "-" + (issue + 1) + "月舆情月报.doc";
+
             //解决文件名乱码问题
             if (request.getHeader("User-Agent").toUpperCase().indexOf("MSIE") > 0) {
                 fileName = URLEncoder.encode(fileName, "UTF-8");
             } else {
                 fileName = new String(fileName.getBytes("UTF-8"), "ISO8859-1");
             }
+
             response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
             //将数据写入模板文件，写入流
             template.process(reportDataMap, new OutputStreamWriter(bao));
+            //写入响应流,返回给客户端
             response.getOutputStream().write(bao.toByteArray());
         } catch (BaseException e) {
             response.setContentType("text/plain;charset=UTF-8");
+
             try {
                 response.setStatus(e.getStatus().value());
                 response.getWriter().write(e.getMessage());
@@ -88,6 +109,7 @@ public class ReportController {
             response.reset();
             response.setContentType("text/plain;charset=UTF-8");
             response.setStatus(500);
+
             try {
                 response.getWriter().write(e.getMessage());
             } catch (IOException e1) {
@@ -99,9 +121,11 @@ public class ReportController {
     @PreAuthorize("hasAnyRole('ADMIN','VIP')")
     @GetMapping("/report/permission")
     public ResponseEntity<?> permission(HttpSession session) {
+        String userName = userHolder.get().getUsername();
         session.setMaxInactiveInterval(600);
         String permission = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
-        session.setAttribute("permission", permission);
+        session.setAttribute(userName + ":permission", permission);
+
         return new ResponseEntity<>(permission, HttpStatus.OK);
     }
 }

@@ -137,12 +137,14 @@ public class ReportServiceImpl implements ReportService {
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日");
             String generateDate = dateTimeFormatter.format(LocalDateTime.now());//报表生成日期
 
+            //生成双月的专题信息量趋势图
             calendar.setTime(endTime);
             calendar.add(Calendar.DATE, -1);
             Date endDateOfEndMonth = calendar.getTime();
             List<ChartPoint> pointList = chartGenerator.getChartPoints(dailyEventList, beginTime.getTime(), endDateOfEndMonth.getTime(), ChartDataTypeEnum.POSTCOUNT);
             JFreeChart doubleMonthChart = chartGenerator.generateChart(pointList, "专题信息量趋势图", ChartTypeEnum.DOUBLE_MONTH);
 
+            //为两个月份分别生成主题趋势图与跟帖趋势图
             calendar.setTime(beginTime);
             calendar.add(Calendar.MONTH, 1);
             calendar.add(Calendar.DATE, -1);
@@ -184,8 +186,6 @@ public class ReportServiceImpl implements ReportService {
             reportDataMap.put("endMonthChart", chartGenerator.chartToBASE64(endMonthChart));
 
             return reportDataMap;
-        } catch (BaseException e) {
-            throw e;
         } catch (Exception e) {
             throw e;
         }

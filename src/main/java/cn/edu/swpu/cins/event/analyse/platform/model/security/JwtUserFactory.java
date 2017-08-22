@@ -1,4 +1,4 @@
-package cn.edu.swpu.cins.event.analyse.platform.model.view;
+package cn.edu.swpu.cins.event.analyse.platform.model.security;
 
 import cn.edu.swpu.cins.event.analyse.platform.model.persistence.User;
 import org.springframework.security.core.GrantedAuthority;

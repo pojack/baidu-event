@@ -49,4 +49,11 @@ dependencies {
 	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
 	compile group: 'org.jfree', name: 'jfreechart', version: '1.0.19'
 	compile ('org.springframework.boot:spring-boot-starter-freemarker:1.5.4.RELEASE')
+	// https://mvnrepository.com/artifact/redis.clients/jedis
+	compile group: 'redis.clients', name: 'jedis', version: '2.9.0'
+	// https://mvnrepository.com/artifact/com.dyuproject.protostuff/protostuff-api
+	compile group: 'com.dyuproject.protostuff', name: 'protostuff-core', version: '1.1.1'
+	// https://mvnrepository.com/artifact/com.dyuproject.protostuff/protostuff-runtime
+	compile group: 'com.dyuproject.protostuff', name: 'protostuff-runtime', version: '1.1.1'
+
 }

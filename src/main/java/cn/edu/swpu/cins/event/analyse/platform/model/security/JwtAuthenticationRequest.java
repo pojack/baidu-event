@@ -1,4 +1,4 @@
-package cn.edu.swpu.cins.event.analyse.platform.model.view;
+package cn.edu.swpu.cins.event.analyse.platform.model.security;
 
 import java.io.Serializable;
 

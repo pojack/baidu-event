@@ -10,7 +10,7 @@
 
     <sql id="SELECT_FIELD"> id, name, region, rules </sql>
 
-    <!--为字符串数组指定typehandler-->
+    <!--为字符串数组指定typehandler,将字符串转换为对应的数组-->
     <resultMap id="topicResultMap" type="cn.edu.swpu.cins.event.analyse.platform.model.persistence.Topic">
         <result typeHandler="cn.edu.swpu.cins.event.analyse.platform.mybatis.typehandler.StringArrayTypeHandler"
                 column="region" javaType="list"
@@ -33,6 +33,19 @@
             #{id}
         </foreach>
     </delete>
+
+    <!--按id查询专题-->
+    <select id="selectByIds" resultMap="topicResultMap">
+        SELECT
+        <include refid="SELECT_FIELD"/>
+        FROM
+        <include refid="TABLE"/>
+        WHERE id IN
+        <foreach item="id" index="index" collection="list"
+                 open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
 
     <!--选择所有-->
     <select id="selectAll" resultMap="topicResultMap">

@@ -3,19 +3,13 @@ package cn.edu.swpu.cins.event.analyse.platform.service.impl;
 import cn.edu.swpu.cins.event.analyse.platform.config.util.JwtTokenUtil;
 import cn.edu.swpu.cins.event.analyse.platform.dao.UserDao;
 import cn.edu.swpu.cins.event.analyse.platform.model.persistence.User;
-import cn.edu.swpu.cins.event.analyse.platform.model.view.JwtUserFactory;
+import cn.edu.swpu.cins.event.analyse.platform.model.security.JwtUserFactory;
 import cn.edu.swpu.cins.event.analyse.platform.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Date;
 
 /**
  * Created by muyi on 17-5-23.
@@ -35,8 +29,6 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
-
-
     @Override
     public String userLogin(String username, String password) {
 //        UsernamePasswordAuthenticationToken upToken = new UsernamePasswordAuthenticationToken(username, password);
@@ -50,12 +42,10 @@ public class AuthServiceImpl implements AuthService {
             // Reload password post-security so we can generate token
             final UserDetails userDetails = JwtUserFactory.createUser(userDao.queryByName(username));
             final String token = jwtTokenUtil.generateToken(userDetails);
-            return token;
 
+            return token;
         }
 
         return null;
     }
-
-
 }
