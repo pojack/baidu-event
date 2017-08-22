@@ -89,7 +89,9 @@ public class SpecialEventServiceImpl implements SpecialEventService {
         List<DailyEvent> dailyEvents;
         dailyEvents = dailyEventDao.selectByRegions(regions);
 
-        return dailyEvents;
+        return dailyEvents.stream()
+                .sorted(comparing(DailyEvent::getPostTime))
+                .collect(toList());
     }
 
     private int matchEventByTopics(DailyEvent event, List<Topic> topics) {
