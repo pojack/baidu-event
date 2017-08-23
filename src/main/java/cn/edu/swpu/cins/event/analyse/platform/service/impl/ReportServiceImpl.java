@@ -43,18 +43,18 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public Map<String, Object> getReportDataMap(int year, int issue) throws Exception {
+    public Map<String, Object> getReportDataMap(int year, int beginMonth) throws Exception {
         try {
             Map<String, Object> reportDataMap = new HashMap<>();
 
-            int beginMonth = issue;//起始月
-
-            int endMonth = issue + 1;//结束月
+            int endMonth = beginMonth + 1;//结束月
 
             LocalDateTime localTime = LocalDateTime.now();
 
             //日期校验
-            if (issue > 11 || issue < 1 || localTime.isBefore(LocalDateTime.of(year, endMonth, 15, 0, 0, 0, 0)))
+            if (beginMonth < 1
+                    || beginMonth > 11
+                    || localTime.isBefore(LocalDateTime.of(year, endMonth, 15, 0, 0, 0, 0)))
                 throw new IlleagalArgumentException();
 
             Date beginTime;//检索开始日期
@@ -75,43 +75,46 @@ public class ReportServiceImpl implements ReportService {
 
             List<DailyEvent> dailyEventList = dailyEventDao.selectByGivenTimes(dateFormat.format(beginTime), dateFormat.format(endTime), "百度贴吧", false);
 
-            List<HandledEvent> handledEventList = handledEventDao.selectByGivenTimes(dateFormat.format(beginTime), dateFormat.format(endTime), "百度贴吧");
+            List<HandledEvent> handledEventList;
+            handledEventList = handledEventDao.selectByGivenTimes(dateFormat.format(beginTime), dateFormat.format(endTime), "百度贴吧");
 
             List<DailyEvent> beginList = dailyEventList.stream()
                     .filter(dailyEvent -> {
                         calendar.setTime(dailyEvent.getPostTime());
-                        return calendar.get(Calendar.MONTH) % issue != 0; //Month value is 0-based. e.g., 0 for January.
+                        return calendar.get(Calendar.MONTH) % beginMonth != 0; //Month value is 0-based. e.g., 0 for January.
                     })
                     .collect(Collectors.toList());//奇数月事件列表
 
             List<DailyEvent> endList = dailyEventList.stream()
                     .filter(dailyEvent -> {
                         calendar.setTime(dailyEvent.getPostTime());
-                        return calendar.get(Calendar.MONTH) % issue == 0;
+                        return calendar.get(Calendar.MONTH) % beginMonth == 0;
                     })
                     .collect(Collectors.toList());//偶数月事件列表
 
-            int beginEventCount = beginList.size();//奇数月事件数目
+            int beginEventCount;//奇数月事件数目
+            beginEventCount = beginList.size();
 
-            int endEventCount = endList.size();//偶数月事件数目
+            int endEventCount;//偶数月事件数目
+            endEventCount = endList.size();
 
-            int beginCommentCount = (int) beginList
+            int beginCommentCount;// 奇数月事件评论数
+            beginCommentCount = beginList
                     .stream()
                     .mapToInt(DailyEvent::getFollowCount)
-                    .summaryStatistics()
-                    .getSum();//奇数月事件评论数
+                    .sum();
 
-            int endCommentCount = (int) endList
+            int endCommentCount;//偶数月事件评论数
+            endCommentCount = endList
                     .stream()
                     .mapToInt(DailyEvent::getFollowCount)
-                    .summaryStatistics()
-                    .getSum();//偶数月事件评论数
+                    .sum();
 
             int beginHandledCount = (int) handledEventList
                     .stream()
                     .filter(dailyEvent -> {
                         calendar.setTime(dailyEvent.getPostTime());
-                        return calendar.get(Calendar.MONTH) % issue != 0 && dailyEvent.getFeedbackCondition() == 1; //Month value is 0-based. e.g., 0 for January.
+                        return calendar.get(Calendar.MONTH) % beginMonth != 0 && dailyEvent.getFeedbackCondition() == 1; //Month value is 0-based. e.g., 0 for January.
                     })
                     .count();//起始月事件妥善处置数
 
@@ -119,10 +122,11 @@ public class ReportServiceImpl implements ReportService {
                     .stream()
                     .filter(dailyEvent -> {
                         calendar.setTime(dailyEvent.getPostTime());
-                        return calendar.get(Calendar.MONTH) % issue == 0 && dailyEvent.getFeedbackCondition() == 1; //Month value is 0-based. e.g., 0 for January.
+                        return calendar.get(Calendar.MONTH) % beginMonth == 0 && dailyEvent.getFeedbackCondition() == 1; //Month value is 0-based. e.g., 0 for January.
                     })
                     .count();//结束月事件妥善处置数
 
+            //统计热点事件
             int heatCount = (int) dailyEventList
                     .stream()
                     .filter(dailyEvent -> (dailyEvent.getFollowCount() > 20))

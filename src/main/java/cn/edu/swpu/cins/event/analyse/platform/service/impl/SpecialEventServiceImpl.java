@@ -15,6 +15,7 @@ import com.dyuproject.protostuff.runtime.RuntimeSchema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import redis.clients.jedis.Transaction;
 
 import java.util.*;
 
@@ -76,8 +77,6 @@ public class SpecialEventServiceImpl implements SpecialEventService {
 
     @Override
     public List<DailyEvent> getAllSpecialEvent() throws BaseException {
-        //缓存映射集
-        Map<String, List<DailyEvent>> cacheMap = new HashMap<>();
         //所有专题的列表
         List<Topic> topics = topicDao.selectAll();
 
@@ -94,7 +93,8 @@ public class SpecialEventServiceImpl implements SpecialEventService {
                 .collect(toList());
     }
 
-    private int matchEventByTopics(DailyEvent event, List<Topic> topics) {
+    private List<Integer> matchEventByTopics(DailyEvent event, List<Topic> topics) {
+        List<Integer> matchedIdList = new ArrayList<>();
         String content = event.getMainView();
 
         for (Topic topic : topics) {
@@ -103,18 +103,18 @@ public class SpecialEventServiceImpl implements SpecialEventService {
                 if (content.contains(region)) {
                     for (String rule : topic.getRules()) {
                         if (content.contains(rule)) {
-                            return topic.getId();
+                            matchedIdList.add(topic.getId());
                         }
                     }
                 }
             }
         }
 
-        return -1;
+        return matchedIdList;
     }
 
-    private List<DailyEvent> getEventByTopics(List<Topic> topics){
-        //缓存映射集
+    private List<DailyEvent> getEventByTopics(List<Topic> topics) {
+        //需要缓存的topic映射集
         Map<String, List<DailyEvent>> cacheMap = new HashMap<>();
         //需要查找的专题列表
         List<Topic> searchTopics = new ArrayList<>();
@@ -133,12 +133,13 @@ public class SpecialEventServiceImpl implements SpecialEventService {
             String key = RedisKeyUtil.getSpecialEventSetKey(id);
             //得到redis中缓存的专题事件
             Set<byte[]> eventByteSet = jedisAdapter.smembers(key.getBytes());
-            //初始化cachemap中的事件列表
-            cacheMap.put(key, new ArrayList<>());
 
             //若专题在redis中无匹配事件则将其添加入待查询专题列表中
             if (eventByteSet == null || eventByteSet.size() == 0) {
                 searchTopics.add(topic);
+
+                //初始化cachemap中的事件列表
+                cacheMap.put(key, new ArrayList<>());
 
                 for (String region : topic.getRegion()) {
                     toMatchRegionSet.add(region);
@@ -148,8 +149,10 @@ public class SpecialEventServiceImpl implements SpecialEventService {
                 //将set中的dailyevent实例化并插入日常事件集合中
                 eventByteSet
                         .forEach(bytes -> {
-                            DailyEvent dailyEvent = ProtostuffSerializationUtil.deserializer(bytes,DailyEvent.class);
-                            resultSet.add(dailyEvent);
+                            DailyEvent dailyEvent = ProtostuffSerializationUtil.deserializer(bytes, DailyEvent.class);
+
+                            if(dailyEvent.getId() != -1)
+                                resultSet.add(dailyEvent);
                         });
             }
         }
@@ -161,17 +164,19 @@ public class SpecialEventServiceImpl implements SpecialEventService {
                 .stream()
                 .filter(dailyEvent -> dailyEvent.getCollectionStatus() == 0)//剔除已归集事件
                 .filter(dailyEvent -> {
-                    int matchedTopicId = matchEventByTopics(dailyEvent, searchTopics);
+                    List<Integer> matchedIdList = matchEventByTopics(dailyEvent, searchTopics);
 
-                    if (matchedTopicId < 0) {
+                    if (matchedIdList.size() == 0) {
                         return false;
                     }
 
-                    String key = RedisKeyUtil.getSpecialEventSetKey(matchedTopicId);
+                    matchedIdList.forEach(matchedTopicId -> {
+                        String key = RedisKeyUtil.getSpecialEventSetKey(matchedTopicId);
 
-                    //为对应的redis中的set添加日常事件
-                    cacheMap.get(key)
-                            .add(dailyEvent);
+                        //为对应的redis中的set添加日常事件
+                        cacheMap.get(key)
+                                .add(dailyEvent);
+                    });
 
                     return true;
                 })//匹配事件与专题
@@ -182,6 +187,12 @@ public class SpecialEventServiceImpl implements SpecialEventService {
         for (Map.Entry<String, List<DailyEvent>> entry : cacheMap.entrySet()) {
             String key = entry.getKey();
             List<DailyEvent> list = entry.getValue();
+
+            if(list.size() == 0){
+                DailyEvent signalEvent = new DailyEvent();
+                signalEvent.setId(-1);
+                list.add(signalEvent);
+            }
 
             list.forEach(dailyEvent -> {
                 //用protostuff将dailyevent 序列化
